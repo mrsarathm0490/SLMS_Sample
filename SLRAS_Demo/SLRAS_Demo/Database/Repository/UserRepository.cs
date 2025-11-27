@@ -45,5 +45,39 @@ namespace SLRAS_Demo.Database.Repository
                 throw;
             }
         }
+
+        public async Task<Users?> GetUserByEmail(string email)
+        {
+            try
+            {
+                Users user = null;
+                var parameters = new List<SqlParameter>()
+                {
+                    new SqlParameter("@email",email)
+                };
+                var(conn,reader)= await _databaseRepository.ExecuteDataReaderAsync("GetUserByEmail", CommandType.StoredProcedure, parameters);
+                if (reader.HasRows)
+                {
+                    reader.Read();
+                    user=new Users() { 
+                        Email = reader["Email"].ToString(),
+                        Passwordhash = (byte[])reader["PasswordHash"],
+                        PasswordSalt = (byte[])reader["PasswordSalt"],
+                        FirstName = reader["FirstName"].ToString(),
+                        LastName = reader["LastName"].ToString(),
+                        MobileNumber= reader["Mobile"].ToString(),
+                        Roles=new List<Roles>()
+                    };
+                    reader.Close();
+                }
+                conn.Close();
+                return user;
+            }
+            catch
+            {
+                throw;
+            }
+
+        }
     }
 }

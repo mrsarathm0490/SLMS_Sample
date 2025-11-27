@@ -5,5 +5,6 @@ namespace SLRAS_Demo.Database.Contract
     public interface IUserRepository
     {
         Task<Users> CreateUser(Users user);
+        Task<Users?> GetUserByEmail(string email);
     }
 }

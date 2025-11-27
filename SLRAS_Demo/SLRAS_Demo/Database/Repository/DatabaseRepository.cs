@@ -51,9 +51,32 @@ namespace SLRAS_Demo.Database.Repository
             throw new NotImplementedException();
         }
 
-        public Task<DataTable> ExecuteDataReaderAsync(string command, CommandType commandType, List<SqlParameter> parameters)
+        public async Task<(SqlConnection,SqlDataReader)> ExecuteDataReaderAsync(string command, CommandType commandType, List<SqlParameter> parameters)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var conn = GetConnection();
+                using (var cmd = new SqlCommand(command, conn))
+                {
+                    cmd.CommandType = commandType;
+                    if (parameters != null)
+                    {
+                        foreach (var parameter in parameters)
+                        {
+                            cmd.Parameters.Add(parameter);
+                        }
+                    }
+
+
+                    await conn.OpenAsync();
+                    SqlDataReader reader= await cmd.ExecuteReaderAsync();
+                    return(conn, reader);
+                }
+            }
+            catch
+            {
+                throw;
+            }
         }
     }
 }

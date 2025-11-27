@@ -12,62 +12,40 @@ namespace SLRAS_Demo.Controllers
     [ApiController]
     public class LoginController : ControllerBase
     {
-       
-        private readonly IConfiguration _configuration;
+
+        private readonly IUserService _userService;
         private readonly IJwtTokenService _jwt;
-        public LoginController(IConfiguration configuration,
+        public LoginController(IUserService userService, IConfiguration configuration,
             IJwtTokenService jwt)
         {
-            _configuration = configuration;
+             _userService= userService;
             _jwt = jwt;
         }
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel request)
         {
-
-            SqlConnection con = new SqlConnection(_configuration.GetConnectionString("Default"));
-            con.Open();
-            SqlCommand cmd = new SqlCommand();
-            cmd.Connection = con;
-            cmd.CommandType = System.Data.CommandType.StoredProcedure;
-            cmd.CommandText = "GetUserByEmail";
-            cmd.Parameters.AddWithValue("@email", request.Email);
-            SqlDataReader reader= await cmd.ExecuteReaderAsync();
-            if (reader.HasRows)
+            try
             {
-                reader.Read();                
-
-                byte[] storedHash = (byte[])reader["PasswordHash"];
-                byte[] storedSalt = (byte[])reader["PasswordSalt"];
+                var (user,storedHash,storedSalt)=await _userService.GetUserByEmailId(request.Email);
+                if (user == null || storedHash==null || storedSalt==null)
+                {
+                    return Unauthorized("No User Found");
+                }
                 bool valid = PasswordHelper.VerifyPasswordHash(request.Password, storedHash, storedSalt);
                 if (!valid)
                 {
-                    reader.Close();
+
                     return Unauthorized("Invalid Password");
                 }
 
-                //UserViewModel user = new UserViewModel()
-                //{
-                //    Id = Convert.ToInt32(reader["Id"]),
-                //    Email = Convert.ToString(reader["Email"]),
-                //    FirstName = Convert.ToString(reader["FirstName"]),
-                //    LastName = Convert.ToString(reader["LastName"]),
-                //    MobileNumber = Convert.ToString(reader["Mobile"]),
-                //    //roleViewModel=new RoleViewModel()
-                //    //{
-                //    //    Id=Convert.ToInt32(reader["RoleId"]),
-                //    //    name = Convert.ToString(reader["RoleName"]),    
-                //    //}
-
-                //};
-                //string token=_jwt.GenerateToken(user);
-                reader.Close();
-                return Ok("");
+                string token=_jwt.GenerateToken(user);
+                return Ok(token);
             }
-
-            return Unauthorized("Invalid UserName");
-            
-
-        }
+            catch (Exception ex)
+            {
+                throw;
+            }        
+          
+        }           
     }
 }

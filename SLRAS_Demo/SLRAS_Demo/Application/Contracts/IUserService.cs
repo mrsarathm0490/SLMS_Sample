@@ -4,10 +4,10 @@ namespace SLRAS_Demo.Application.Contracts
 {
     public interface IUserService
     {
-        public List<UserViewModel> GetUsers();
-        public UserViewModel GetUser(int id);
-        UserViewModel GetUserByEmailId(string emailId);
-        public Task<UserViewModel> CreateUser(UserViewModel userViewModel);
-        public bool DeleteUserById(int id);
+        List<UserViewModel> GetUsers();
+        UserViewModel GetUser(int id);
+        Task<(UserViewModel, byte[]?, byte[]?)> GetUserByEmailId(string emailId);
+        Task<UserViewModel> CreateUser(UserViewModel userViewModel);
+        bool DeleteUserById(int id);
     }
 }

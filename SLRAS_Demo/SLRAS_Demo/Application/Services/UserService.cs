@@ -55,9 +55,25 @@ namespace SLRAS_Demo.Application.Services
             throw new NotImplementedException();
         }
 
-        public UserViewModel GetUserByEmailId(string emailId)
+        public async Task<(UserViewModel?, byte[]?, byte[]?)> GetUserByEmailId(string emailId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                Users? user=await _userRepository.GetUserByEmail(emailId);
+                if (user == null)
+                {
+                    return (null, null, null);
+                }
+                return (new UserViewModel() {
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName, 
+                    MobileNumber = user.MobileNumber,
+                    roleViewModel=user.Roles.Select(s=>new RoleViewModel { Id=s.Id,name=s.Name}).ToList(),
+                },user.Passwordhash,user.PasswordSalt);
+            }catch {
+                throw;
+            }
         }
 
         public List<UserViewModel> GetUsers()

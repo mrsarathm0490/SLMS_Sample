@@ -7,6 +7,6 @@ namespace SLRAS_Demo.Database.Contract
     {
         Task<int> ExecuteNonQueryAsync(string command, CommandType commandType, List<SqlParameter>? parameters);
         Task<object> ExecuteScalarAsync(string command, CommandType commandType, List<SqlParameter> parameters);
-        Task<DataTable> ExecuteDataReaderAsync(string command, CommandType commandType, List<SqlParameter> parameters);
+        Task<(SqlConnection,SqlDataReader)> ExecuteDataReaderAsync(string command, CommandType commandType, List<SqlParameter> parameters);
     }
 }
